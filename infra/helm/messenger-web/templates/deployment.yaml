@@ -62,7 +62,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 80      # NGINX écoute sur 80
+            - containerPort: {{ .Values.service.targetPort }}
               name: http
 
           resources:
@@ -76,8 +76,8 @@ spec:
           # ---- Probes NGINX (/health endpoint défini dans nginx.conf) ----
           livenessProbe:
             httpGet:
-              path: /health
-              port: 80
+              path: {{ .Values.healthCheck.path }}
+              port: {{ .Values.healthCheck.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 3
@@ -85,8 +85,8 @@ spec:
 
           readinessProbe:
             httpGet:
-              path: /health
-              port: 80
+              path: {{ .Values.healthCheck.path }}
+              port: {{ .Values.healthCheck.port }}
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 2
@@ -94,7 +94,7 @@ spec:
 
           startupProbe:
             httpGet:
-              path: /health
-              port: 80
+              path: {{ .Values.healthCheck.path }}
+              port: {{ .Values.healthCheck.port }}
             failureThreshold: 10
             periodSeconds: 5
