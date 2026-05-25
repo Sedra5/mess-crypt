@@ -65,6 +65,12 @@ spec:
             - containerPort: {{ .Values.service.targetPort }}
               name: http
 
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "{{ .Values.env.apiUrl }}"
+            - name: NEXT_PUBLIC_SIGNALR_URL
+              value: "{{ .Values.env.signalrUrl }}"
+
           resources:
             requests:
               cpu: {{ .Values.resources.requests.cpu }}

@@ -12,3 +12,7 @@ resources:
 autoscaling:
   minReplicas: 2
   maxReplicas: 20
+
+env:
+  apiUrl: "https://api.messcrypt.com/api"
+  signalrUrl: "https://api.messcrypt.com/hubs/chat"

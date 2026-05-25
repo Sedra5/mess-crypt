@@ -49,3 +49,8 @@ nodeSelector: {}
 healthCheck:
   path: /health
   port: 8080
+
+# --- Environment Variables ---
+env:
+  apiUrl: "http://localhost:5156/api"
+  signalrUrl: "http://localhost:5156/hubs/chat"
