@@ -100,18 +100,31 @@ echo ""
 echo "[11/13] Configuration Azure Key Vault CSI SecretProviderClass..."
 kubectl apply -f k8s/secrets/secret-provider.yaml
 
-# --- 12. Déployer PostgreSQL et Redis en HA ---
-echo ""
-echo "[12/13] Déploiement des bases de données (PostgreSQL HA & Redis Sentinel)..."
+# --- 12. Déploiement des bases de données (PostgreSQL standalone & Redis Sentinel) ---
 
-echo "  Déploiement de PostgreSQL HA..."
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm upgrade --install postgresql-ha oci://registry-1.docker.io/bitnamicharts/postgresql-ha --version 14.2.5 \
+# NOTE: bitnami/postgresql-ha images sont désormais payantes.
+# On utilise bitnami/postgresql (1 Master) en attendant CrunchyData PGO (HA open-source).
+echo "  Déploiement de PostgreSQL (standalone)..."
+
+# Lire le password depuis Key Vault (jamais en clair dans les fichiers)
+PG_PWD=$(az keyvault secret show --vault-name kv-sedra5-mess-2 --name postgres-db-password --query value -o tsv 2>/dev/null)
+if [ -z "$PG_PWD" ]; then
+  echo "ERREUR: Impossible de lire postgres-db-password depuis Key Vault. Vérifiez l'accès."
+  exit 1
+fi
+
+# Créer le secret K8s référencé par postgresql-values.yaml
+kubectl create secret generic postgresql-credentials \
   --namespace production \
-  -f infra/helm/postgresql-ha-values.yaml \
+  --from-literal=postgres-password="$PG_PWD" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+helm upgrade --install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql \
+  --namespace production \
+  -f infra/helm/postgresql-values.yaml \
   --wait --timeout 10m
 
-echo "  Déploiement de Redis Sentinel..."
+echo "  Déploiement de Redis Sentinel (HA)..."
 helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis \
   --namespace production \
   -f infra/helm/redis-ha-values.yaml \

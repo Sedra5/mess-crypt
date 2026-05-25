@@ -58,7 +58,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: postgresql-ha-postgresql
+      app.kubernetes.io/name: postgresql
   ingress:
     - from:
         - podSelector:
@@ -124,7 +124,7 @@ spec:
     - to:
         - podSelector:
             matchLabels:
-              app: postgresql-ha-postgresql
+              app.kubernetes.io/name: postgresql
       ports:
         - port: 5432
     - to:

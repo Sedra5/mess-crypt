@@ -82,17 +82,32 @@ kubectl apply -f k8s/network-policies/network-policies.yaml
 Write-Host "`n[11/13] Configuration Azure Key Vault CSI SecretProviderClass..." -ForegroundColor Yellow
 kubectl apply -f k8s/secrets/secret-provider.yaml
 
-# --- 12. Deployer PostgreSQL et Redis en HA ---
-Write-Host "`n[12/13] Deploiement des bases de donnees (PostgreSQL HA & Redis Sentinel)..." -ForegroundColor Yellow
+# --- 12. Deployer PostgreSQL (standalone) et Redis Sentinel (HA) ---
+Write-Host "`n[12/13] Deploiement des bases de donnees (PostgreSQL standalone & Redis Sentinel)..." -ForegroundColor Yellow
 
-Write-Host "  Deploiement de PostgreSQL HA..." -ForegroundColor Yellow
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm upgrade --install postgresql-ha oci://registry-1.docker.io/bitnamicharts/postgresql-ha --version 14.2.5 `
+# NOTE: bitnami/postgresql-ha images sont desormais payantes.
+# On utilise bitnami/postgresql (1 Master) en attendant CrunchyData PGO (HA open-source).
+Write-Host "  Deploiement de PostgreSQL (standalone)..." -ForegroundColor Yellow
+
+# Lire le password depuis Key Vault (jamais en clair dans les fichiers)
+$PG_PWD = az keyvault secret show --vault-name kv-sedra5-mess-2 --name postgres-db-password --query value -o tsv 2>$null
+if (-not $PG_PWD) {
+  Write-Error "ERREUR: Impossible de lire postgres-db-password depuis Key Vault. Verifiez l'acces."
+  exit 1
+}
+
+# Creer le secret K8s reference par postgresql-values.yaml
+kubectl create secret generic postgresql-credentials `
   --namespace production `
-  -f infra/helm/postgresql-ha-values.yaml `
+  --from-literal=postgres-password="$PG_PWD" `
+  --dry-run=client -o yaml | kubectl apply -f -
+
+helm upgrade --install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql `
+  --namespace production `
+  -f infra/helm/postgresql-values.yaml `
   --wait --timeout 10m
 
-Write-Host "  Deploiement de Redis Sentinel..." -ForegroundColor Yellow
+Write-Host "  Deploiement de Redis Sentinel (HA)..." -ForegroundColor Yellow
 helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis `
   --namespace production `
   -f infra/helm/redis-ha-values.yaml `

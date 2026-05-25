@@ -1,0 +1,43 @@
+# Values pour Bitnami PostgreSQL (mode standalone - 1 Master)
+# NOTE: bitnami/postgresql-ha est désactivé car les images ne sont plus disponibles gratuitement.
+# Utiliser ce chart bitnami/postgresql standard en attendant une solution HA open-source (CrunchyData PGO).
+# Commande: helm upgrade --install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql -n production -f infra/helm/postgresql-values.yaml
+
+global:
+  postgresql:
+    auth:
+      # IMPORTANT: Le mot de passe est passé via --set au moment du déploiement (lu depuis Key Vault).
+      # Ne jamais mettre le mot de passe ici. Voir bootstrap.ps1 / bootstrap.sh.
+      database: messenger
+      existingSecret: "postgresql-credentials"
+      secretKeys:
+        adminPasswordKey: postgres-password
+
+primary:
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: "managed-premium"
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  # Liveness / Readiness probes
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
