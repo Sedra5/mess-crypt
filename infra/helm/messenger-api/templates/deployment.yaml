@@ -81,6 +81,11 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: redis-connection-string
+            - name: Jwt__Secret
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: jwt-secret
 
           resources:
             requests:
