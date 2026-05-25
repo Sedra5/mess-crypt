@@ -209,9 +209,11 @@ export function useChatActions() {
 
       for (const convId of Object.keys(currentMessages)) {
         const msgs = currentMessages[convId];
-        // Find messages that haven't been decrypted yet
+        // Find messages that haven't been decrypted yet, or failed due to missing key earlier
         const undecrypted = msgs.filter(
-          (msg) => msg.decryptedContent === undefined && !processedMsgIds.current.has(msg.id)
+          (msg) => 
+            (msg.decryptedContent === undefined || msg.decryptedContent === "Clé privée manquante.") && 
+            !processedMsgIds.current.has(msg.id)
         );
         if (undecrypted.length === 0) continue;
 
@@ -220,7 +222,7 @@ export function useChatActions() {
 
         const updatedMsgs = await Promise.all(
           msgs.map(async (msg) => {
-            if (msg.decryptedContent !== undefined) return msg;
+            if (msg.decryptedContent !== undefined && msg.decryptedContent !== "Clé privée manquante.") return msg;
             if (msg.senderId === user.id) {
               if (!msg.encryptedKeyForSender) {
                 return { ...msg, decryptedContent: "Ancien message (non déchiffrable par l'expéditeur)" };
