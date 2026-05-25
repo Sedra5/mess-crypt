@@ -74,8 +74,6 @@ jobs:
           tags: |
             ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.sha }}
             ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
-          cache-from: type=registry,ref=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:cache
-          cache-to: type=registry,ref=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:cache,mode=max
 
   # ---- Update GitOps manifest (triggers ArgoCD) ----
   update-gitops:
