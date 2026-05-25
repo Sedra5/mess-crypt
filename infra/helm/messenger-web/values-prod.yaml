@@ -1,9 +1,7 @@
 # Override pour production
 replicaCount: 2
-
 image:
-  tag: "GIT_SHA"       # Remplacé automatiquement par CI/CD
-
+  tag: "4642211" # Remplacé automatiquement par CI/CD
 resources:
   requests:
     cpu: "200m"
@@ -11,7 +9,6 @@ resources:
   limits:
     cpu: "1000m"
     memory: "512Mi"
-
 autoscaling:
   minReplicas: 2
   maxReplicas: 20
