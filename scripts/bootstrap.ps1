@@ -88,7 +88,7 @@ Write-Host "`n[12/13] Deploiement des bases de donnees (PostgreSQL HA & Redis Se
 Write-Host "  Deploiement de PostgreSQL HA..." -ForegroundColor Yellow
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm upgrade --install postgresql-ha bitnami/postgresql-ha `
+helm upgrade --install postgresql-ha bitnami/postgresql-ha --version 14.2.5 `
   --namespace production `
   -f infra/helm/postgresql-ha-values.yaml `
   --wait --timeout 10m
