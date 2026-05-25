@@ -1,0 +1,54 @@
+# infra/helm/shared/postgresql-ha/values.yaml
+# Bitnami PostgreSQL HA — with official Docker Hub images as fallback
+
+architecture: replication
+
+global:
+  imageRegistry: ""
+
+# Use official PostgreSQL images instead of paid Bitnami ones
+image:
+  registry: docker.io
+  repository: bitnami/postgresql-repmgr
+  tag: 16.6.0-debian-12-r6
+
+pgpoolImage:
+  registry: docker.io
+  repository: bitnami/pgpool
+  tag: 4.5.5-debian-12-r2
+
+postgresql:
+  replicaCount: 3
+  nodeSelector: {}
+  tolerations: []
+
+  persistence:
+    enabled: true
+    storageClass: managed-premium
+    size: 10Gi
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+pgpool:
+  replicaCount: 1
+
+# Backup automatique
+backup:
+  enabled: false
+  cronjob:
+    schedule: "0 2 * * *"    # Backup quotidien 2h du matin
+    storage:
+      storageClass: managed-csi
+      size: 10Gi
+
+auth:
+  existingSecret: postgresql-secret
+  secretKeys:
+    adminPasswordKey: postgres-password
+    replicationPasswordKey: replication-password

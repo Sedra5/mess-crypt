@@ -1,0 +1,58 @@
+# k8s/rbac/rbac.yaml
+# RBAC — Contrôle d'accès au namespace production
+
+---
+# Role : accès lecture seule au namespace production (pour les devs)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: production-viewer
+  namespace: production
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "configmaps", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch"]
+
+---
+# Role : accès complet au namespace production (pour les ops/CI-CD)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: production-deployer
+  namespace: production
+rules:
+  - apiGroups: ["", "apps", "autoscaling", "policy", "networking.k8s.io"]
+    resources: ["*"]
+    verbs: ["*"]
+
+---
+# RoleBinding : lier le service account CI/CD au role deployer
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cicd-deployer-binding
+  namespace: production
+subjects:
+  - kind: ServiceAccount
+    name: cicd-deployer
+    namespace: production
+roleRef:
+  kind: Role
+  name: production-deployer
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ServiceAccount pour le pipeline CI/CD
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cicd-deployer
+  namespace: production
+  labels:
+    app: cicd

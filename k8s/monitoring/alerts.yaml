@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: messenger-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: messenger-availability
+      rules:
+        # Alerte si moins de 2 pods messenger-web (frontend)
+        - alert: MessengerWebPodsDown
+          expr: count(kube_pod_status_ready{namespace="production", pod=~"messenger-web.*", condition="true"}) < 2
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Frontend messenger-web pods insuffisants"
+            description: "Moins de 2 pods messenger-web sont ready"
+
+        # Alerte si moins de 2 pods messenger-api (backend)
+        - alert: MessengerApiPodsDown
+          expr: count(kube_pod_status_ready{namespace="production", pod=~"messenger-api.*", condition="true"}) < 2
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Backend messenger-api pods insuffisants"
+            description: "Moins de 2 pods messenger-api sont ready"
+
+        # Alerte si CPU > 85%
+        - alert: HighCPUUsage
+          expr: rate(container_cpu_usage_seconds_total{namespace="production"}[5m]) > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CPU élevé sur {{ $labels.pod }}"
+
+        # Alerte si PostgreSQL Primary down
+        - alert: PostgreSQLDown
+          expr: pg_up == 0
+          for: 30s
+          labels:
+            severity: critical
+          annotations:
+            summary: "PostgreSQL Primary inaccessible"
+
+        # Alerte si Redis down
+        - alert: RedisDown
+          expr: redis_up == 0
+          for: 30s
+          labels:
+            severity: critical
+          annotations:
+            summary: "Redis inaccessible"

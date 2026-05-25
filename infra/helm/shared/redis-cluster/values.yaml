@@ -1,0 +1,43 @@
+# infra/helm/shared/redis-cluster/values.yaml
+# Bitnami Redis — helm install redis bitnami/redis -f values.yaml
+
+architecture: replication
+
+sentinel:
+  enabled: true
+
+master:
+  replicaCount: 1
+  persistence:
+    enabled: true
+    storageClass: managed-premium
+    size: 10Gi
+  nodeSelector: {}
+  tolerations: []
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+replica:
+  replicaCount: 2
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+  nodeSelector: {}
+  tolerations: []
+
+  persistence:
+    enabled: true
+    storageClass: managed-premium
+    size: 10Gi
+
+auth:
+  enabled: true
+  existingSecret: redis-secret
+  existingSecretPasswordKey: redis-password

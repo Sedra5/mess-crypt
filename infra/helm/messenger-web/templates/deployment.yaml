@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messenger-web
+  namespace: production
+  labels:
+    app: messenger-web
+    version: {{ .Values.image.tag }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0       # Zéro downtime
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      app: messenger-web
+
+  template:
+    metadata:
+      labels:
+        app: messenger-web
+        version: {{ .Values.image.tag }}
+    spec:
+      # ---- Distribution multi-AZ (tolérance de panne) ----
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: messenger-web
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: messenger-web
+
+      # ---- Anti-affinité : préférer distribuer les pods sur différents nodes ----
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: [messenger-web]
+                topologyKey: kubernetes.io/hostname
+
+      nodeSelector: {}
+
+      terminationGracePeriodSeconds: 30   # NGINX se termine rapidement
+
+      containers:
+        - name: messenger-web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 80      # NGINX écoute sur 80
+              name: http
+
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+
+          # ---- Probes NGINX (/health endpoint défini dans nginx.conf) ----
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 80
+            failureThreshold: 10
+            periodSeconds: 5

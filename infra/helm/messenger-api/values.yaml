@@ -1,0 +1,58 @@
+replicaCount: 2
+
+image:
+  repository: acrsedra5messcrypt.azurecr.io/messenger-api
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# --- Service ---
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080     # .NET 9 écoute sur 8080 (ASPNETCORE_URLS=http://+:8080)
+
+# --- Ingress ---
+ingress:
+  enabled: true
+  className: nginx
+  host: api.messcrypt.com
+  tls:
+    enabled: true
+    secretName: messenger-api-tls
+
+# --- Ressources (.NET 9 = plus lourd que NGINX) ---
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+# --- Autoscaling ---
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# --- PDB ---
+podDisruptionBudget:
+  minAvailable: 2
+
+# --- Placement ---
+nodeSelector: {}
+
+# --- Health Checks (.NET health endpoints) ---
+healthCheck:
+  liveness:
+    path: /health/live
+    port: 8080
+  readiness:
+    path: /health/ready
+    port: 8080
+
+# --- Environnement ---
+env:
+  ASPNETCORE_ENVIRONMENT: "Production"

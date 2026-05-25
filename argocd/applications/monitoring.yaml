@@ -1,0 +1,24 @@
+# argocd/applications/monitoring.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: argocd
+spec:
+  project: production
+
+  source:
+    repoURL: https://github.com/Sedra5/mess-crypt
+    targetRevision: main
+    path: k8s/monitoring
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: false          # Ne pas supprimer les alertes automatiquement
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

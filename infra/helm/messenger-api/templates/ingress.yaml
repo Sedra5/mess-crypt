@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: messenger-api-ingress
+  namespace: production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+
+    # ---- CRITIQUE pour SignalR WebSockets (HA multi-pods) ----
+    # Timeouts élevés pour maintenir les connexions WebSocket ouvertes
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+
+    # Sticky Sessions — OBLIGATOIRE pour SignalR avec backplane Redis
+    # Quand un client négocie une connexion WebSocket, il DOIT rester
+    # sur le même pod pendant la durée de la session
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "messenger-route"
+    nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+
+    # CORS — autoriser le frontend
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://messcrypt.com"
+
+spec:
+  tls:
+    - hosts:
+        - api.messcrypt.com
+      secretName: messenger-api-tls
+
+  rules:
+    - host: api.messcrypt.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: messenger-api-svc
+                port:
+                  number: 80

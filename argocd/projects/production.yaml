@@ -1,0 +1,32 @@
+# argocd/projects/production.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: production
+  namespace: argocd
+spec:
+  description: "MessengerApp Production Project"
+
+  # Sources autorisées
+  sourceRepos:
+    - 'https://github.com/Sedra5/mess-crypt'
+
+  # Destinations autorisées
+  destinations:
+    - namespace: production
+      server: https://kubernetes.default.svc
+    - namespace: monitoring
+      server: https://kubernetes.default.svc
+    - namespace: ingress-nginx
+      server: https://kubernetes.default.svc
+
+  # Ressources K8s autorisées
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: 'networking.k8s.io'
+      kind: Ingress
+
+  # Empêcher la suppression accidentelle
+  orphanedResources:
+    warn: true

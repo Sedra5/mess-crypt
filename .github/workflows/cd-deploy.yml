@@ -1,0 +1,78 @@
+# .github/workflows/cd-deploy.yml
+name: CD — Deploy to AKS (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+      component:
+        description: 'Component to deploy'
+        required: true
+        type: choice
+        options:
+          - all
+          - messenger-web
+          - messenger-api
+
+env:
+  RESOURCE_GROUP: rg-myapp-prod
+  CLUSTER_NAME: aks-myapp-prod
+
+jobs:
+  deploy:
+    name: Deploy to AKS
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.CLUSTER_NAME }} \
+            --overwrite-existing
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
+
+      - name: Deploy messenger-web
+        if: github.event.inputs.component == 'all' || github.event.inputs.component == 'messenger-web'
+        run: |
+          helm upgrade --install messenger-web infra/helm/messenger-web \
+            --namespace production \
+            --create-namespace \
+            -f infra/helm/messenger-web/values.yaml \
+            -f infra/helm/messenger-web/values-prod.yaml \
+            --wait --timeout 5m
+
+      - name: Deploy messenger-api
+        if: github.event.inputs.component == 'all' || github.event.inputs.component == 'messenger-api'
+        run: |
+          helm upgrade --install messenger-api infra/helm/messenger-api \
+            --namespace production \
+            --create-namespace \
+            -f infra/helm/messenger-api/values.yaml \
+            -f infra/helm/messenger-api/values-prod.yaml \
+            --wait --timeout 5m
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n production -o wide
+          kubectl get svc -n production
+          kubectl get ingress -n production

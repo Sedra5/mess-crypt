@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: messenger-api-config
+  namespace: production
+  labels:
+    app: messenger-api
+data:
+  ASPNETCORE_ENVIRONMENT: {{ .Values.env.ASPNETCORE_ENVIRONMENT | quote }}
+  ASPNETCORE_URLS: "http://+:8080"
+  # Les autres variables non-secrètes peuvent être ajoutées ici

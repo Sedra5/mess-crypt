@@ -1,0 +1,35 @@
+# argocd/applications/messenger-api.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: messenger-api
+  namespace: argocd
+spec:
+  project: production
+
+  source:
+    repoURL: https://github.com/Sedra5/mess-crypt
+    targetRevision: main
+    path: infra/helm/messenger-api
+    helm:
+      valueFiles:
+      - values.yaml
+      - values-prod.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        maxDuration: 3m
+        factor: 2

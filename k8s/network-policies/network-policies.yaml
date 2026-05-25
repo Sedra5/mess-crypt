@@ -1,0 +1,136 @@
+# Bloquer tout le trafic par défaut (Zero-Trust)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: production
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# Autoriser Ingress NGINX → messenger-web (frontend)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-web
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: messenger-web
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - port: 80
+
+---
+# Autoriser Ingress NGINX → messenger-api (backend)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-api
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: messenger-api
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - port: 8080
+
+---
+# Autoriser messenger-api → PostgreSQL
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-to-postgres
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql-ha-postgresql
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: messenger-api
+      ports:
+        - port: 5432
+
+---
+# Autoriser messenger-api → Redis (data + sentinel)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-to-redis
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: messenger-api
+      ports:
+        - port: 6379
+        - port: 26379
+
+---
+# Autoriser DNS (kube-dns) pour tous les pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: production
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# Autoriser Egress messenger-api → PostgreSQL et Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-egress
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: messenger-api
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql-ha-postgresql
+      ports:
+        - port: 5432
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - port: 6379
+        - port: 26379

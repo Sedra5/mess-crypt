@@ -1,0 +1,51 @@
+replicaCount: 2
+
+image:
+  repository: acrsedra5messcrypt.azurecr.io/messenger-web
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# --- Service ---
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80       # NGINX écoute sur le port 80
+
+# --- Ingress ---
+ingress:
+  enabled: true
+  className: nginx
+  host: messcrypt.com
+  tls:
+    enabled: true
+    secretName: messenger-web-tls
+
+# --- Ressources (NGINX = très léger) ---
+resources:
+  requests:
+    cpu: "100m"
+    memory: "64Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+
+# --- Autoscaling ---
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# --- PDB ---
+podDisruptionBudget:
+  minAvailable: 2
+
+# --- Placement ---
+nodeSelector: {}
+
+# --- Health Checks ---
+# NGINX répond sur /health (défini dans nginx.conf)
+healthCheck:
+  path: /health
+  port: 80
