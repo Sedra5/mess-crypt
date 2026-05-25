@@ -106,14 +106,13 @@ echo "[12/13] Déploiement des bases de données (PostgreSQL HA & Redis Sentinel
 
 echo "  Déploiement de PostgreSQL HA..."
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-helm upgrade --install postgresql-ha bitnami/postgresql-ha --version 14.2.5 \
+helm upgrade --install postgresql-ha oci://registry-1.docker.io/bitnamicharts/postgresql-ha \
   --namespace production \
   -f infra/helm/postgresql-ha-values.yaml \
   --wait --timeout 10m
 
 echo "  Déploiement de Redis Sentinel..."
-helm upgrade --install redis bitnami/redis \
+helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis \
   --namespace production \
   -f infra/helm/redis-ha-values.yaml \
   --wait --timeout 5m
