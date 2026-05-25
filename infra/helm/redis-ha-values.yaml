@@ -1,0 +1,27 @@
+# Values utilisées pour le déploiement de Bitnami Redis en HA (Sentinel)
+# Commande: helm upgrade --install redis bitnami/redis -f infra/helm/redis-ha-values.yaml -n production
+
+architecture: replication
+
+replica:
+  replicaCount: 3
+
+sentinel:
+  enabled: true
+
+auth:
+  enabled: true
+  existingSecret: redis-secret
+  existingSecretPasswordKey: redis-password
+
+master:
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: managed-premium
+
+replica:
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: managed-premium
