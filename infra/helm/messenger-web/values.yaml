@@ -9,7 +9,7 @@ image:
 service:
   type: ClusterIP
   port: 80
-  targetPort: 80       # NGINX écoute sur le port 80
+  targetPort: 8080       # NGINX écoute sur le port 8080
 
 # --- Ingress ---
 ingress:
