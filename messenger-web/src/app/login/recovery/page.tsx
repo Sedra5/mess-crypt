@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { deriveKeyFromPhrase, decryptPrivateKey } from "@/lib/crypto/recovery";
+import { savePrivateKey } from "@/lib/crypto/store";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { McTextarea } from "@/components/ui/McInput";
 import { McButton } from "@/components/ui/McButton";
@@ -65,6 +66,7 @@ export default function RecoveryPage() {
         throw lastErr || new Error("Failed to decrypt with all phrase variations");
       }
 
+      await savePrivateKey(user.id, privateKey);
       useAuthStore.getState().setPrivateKey(privateKey);
       router.push("/");
     } catch (err) {
