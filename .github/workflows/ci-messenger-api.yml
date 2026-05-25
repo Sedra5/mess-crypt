@@ -4,10 +4,14 @@ name: CI — messenger-api (Backend .NET 9)
 on:
   push:
     branches: [main]
-    paths: ['MessengerApp/**']
+    paths: 
+      - 'MessengerApp/**'
+      - '.github/workflows/ci-messenger-api.yml'
   pull_request:
     branches: [main]
-    paths: ['MessengerApp/**']
+    paths: 
+      - 'MessengerApp/**'
+      - '.github/workflows/ci-messenger-api.yml'
 
 env:
   ACR_NAME: acrsedra5messcrypt

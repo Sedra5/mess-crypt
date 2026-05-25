@@ -4,10 +4,14 @@ name: CI — messenger-web (Frontend)
 on:
   push:
     branches: [main]
-    paths: ['messenger-web/**']
+    paths: 
+      - 'messenger-web/**'
+      - '.github/workflows/ci-messenger-web.yml'
   pull_request:
     branches: [main]
-    paths: ['messenger-web/**']
+    paths: 
+      - 'messenger-web/**'
+      - '.github/workflows/ci-messenger-web.yml'
 
 env:
   ACR_NAME: acrsedra5messcrypt
