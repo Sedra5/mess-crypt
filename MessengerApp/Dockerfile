@@ -9,7 +9,6 @@ COPY src/MessengerApp.Application/*.csproj ./src/MessengerApp.Application/
 COPY src/MessengerApp.Infrastructure/*.csproj ./src/MessengerApp.Infrastructure/
 COPY src/MessengerApp.API/*.csproj ./src/MessengerApp.API/
 COPY tests/MessengerApp.UnitTests/*.csproj ./tests/MessengerApp.UnitTests/
-COPY tests/MessengerApp.IntegrationTests/*.csproj ./tests/MessengerApp.IntegrationTests/
 RUN dotnet restore
 
 # Build
