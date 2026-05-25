@@ -13,6 +13,9 @@ on:
       - 'messenger-web/**'
       - '.github/workflows/ci-messenger-web.yml'
 
+permissions:
+  contents: write
+
 env:
   ACR_NAME: acrsedra5messcrypt
   IMAGE_NAME: messenger-web

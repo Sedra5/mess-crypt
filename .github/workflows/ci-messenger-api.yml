@@ -13,6 +13,9 @@ on:
       - 'MessengerApp/**'
       - '.github/workflows/ci-messenger-api.yml'
 
+permissions:
+  contents: write
+
 env:
   ACR_NAME: acrsedra5messcrypt
   IMAGE_NAME: messenger-api
