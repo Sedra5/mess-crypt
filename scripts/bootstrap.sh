@@ -111,13 +111,22 @@ echo ""
 echo "[11/13] Configuration Azure Key Vault CSI SecretProviderClass..."
 kubectl apply -f k8s/secrets/secret-provider.yaml
 
-# --- 12. Déployer PostgreSQL et Redis ---
+# --- 12. Déployer PostgreSQL et Redis en HA ---
 echo ""
-echo "[12/13] Déploiement des bases de données..."
-kubectl apply -f k8s/database/postgresql-basic.yaml
-helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis \
+echo "[12/13] Déploiement des bases de données (PostgreSQL HA & Redis Sentinel)..."
+
+echo "  Déploiement de PostgreSQL HA..."
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm upgrade --install postgresql-ha bitnami/postgresql-ha \
   --namespace production \
-  -f infra/helm/shared/redis-cluster/values.yaml \
+  -f infra/helm/postgresql-ha-values.yaml \
+  --wait --timeout 10m
+
+echo "  Déploiement de Redis Sentinel..."
+helm upgrade --install redis bitnami/redis \
+  --namespace production \
+  -f infra/helm/redis-ha-values.yaml \
   --wait --timeout 5m
 
 # --- 13. Alertes Prometheus ---

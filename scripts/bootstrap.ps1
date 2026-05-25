@@ -91,12 +91,21 @@ kubectl apply -f k8s/network-policies/network-policies.yaml
 Write-Host "`n[11/13] Configuration Azure Key Vault CSI SecretProviderClass..." -ForegroundColor Yellow
 kubectl apply -f k8s/secrets/secret-provider.yaml
 
-# --- 12. Deployer PostgreSQL et Redis ---
-Write-Host "`n[12/13] Deploiement des bases de donnees..." -ForegroundColor Yellow
-kubectl apply -f k8s/database/postgresql-basic.yaml
-helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis `
+# --- 12. Deployer PostgreSQL et Redis en HA ---
+Write-Host "`n[12/13] Deploiement des bases de donnees (PostgreSQL HA & Redis Sentinel)..." -ForegroundColor Yellow
+
+Write-Host "  Deploiement de PostgreSQL HA..." -ForegroundColor Yellow
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm upgrade --install postgresql-ha bitnami/postgresql-ha `
   --namespace production `
-  -f infra/helm/shared/redis-cluster/values.yaml `
+  -f infra/helm/postgresql-ha-values.yaml `
+  --wait --timeout 10m
+
+Write-Host "  Deploiement de Redis Sentinel..." -ForegroundColor Yellow
+helm upgrade --install redis bitnami/redis `
+  --namespace production `
+  -f infra/helm/redis-ha-values.yaml `
   --wait --timeout 5m
 
 # --- 13. Alertes Prometheus ---

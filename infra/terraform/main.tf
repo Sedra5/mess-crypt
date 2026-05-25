@@ -48,15 +48,25 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   default_node_pool {
     name                         = "system"
-    node_count                   = var.system_node_count
     vm_size                      = var.system_node_vm_size
     vnet_subnet_id               = azurerm_subnet.aks.id
     os_disk_size_gb              = 30
     os_disk_type                 = "Managed"
 
+    enable_auto_scaling          = true
+    min_count                    = 2
+    max_count                    = 5
+    node_count                   = 2
+
     upgrade_settings {
       max_surge = "33%"
     }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      default_node_pool[0].node_count
+    ]
   }
 
   identity {
