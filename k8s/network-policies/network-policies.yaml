@@ -27,7 +27,7 @@ spec:
             matchLabels:
               name: ingress-nginx
       ports:
-        - port: 80
+        - port: 8080
 
 ---
 # Autoriser Ingress NGINX → messenger-api (backend)
