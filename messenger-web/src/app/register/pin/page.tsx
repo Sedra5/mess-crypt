@@ -15,10 +15,10 @@ function McLogoIcon() {
   return (
     <div className="w-[64px] h-[64px] bg-[#0F6E56] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md shadow-[#0F6E56]/20">
       <svg width="36" height="36" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M15 3C9.477 3 5 7.477 5 13c0 2.9 1.22 5.52 3.18 7.38L7 27l6.12-2.08A10.4 10.4 0 0015 25c5.523 0 10-4.477 10-10S20.523 3 15 3z" fill="white" opacity="0.95"/>
-        <rect x="9.5" y="12" width="2.8" height="6" rx="1.4" fill="#0F6E56"/>
-        <rect x="13.6" y="9.5" width="2.8" height="8.5" rx="1.4" fill="#0F6E56"/>
-        <rect x="17.7" y="13" width="2.8" height="5" rx="1.4" fill="#0F6E56"/>
+        <path d="M15 3C9.477 3 5 7.477 5 13c0 2.9 1.22 5.52 3.18 7.38L7 27l6.12-2.08A10.4 10.4 0 0015 25c5.523 0 10-4.477 10-10S20.523 3 15 3z" fill="white" opacity="0.95" />
+        <rect x="9.5" y="12" width="2.8" height="6" rx="1.4" fill="#0F6E56" />
+        <rect x="13.6" y="9.5" width="2.8" height="8.5" rx="1.4" fill="#0F6E56" />
+        <rect x="17.7" y="13" width="2.8" height="5" rx="1.4" fill="#0F6E56" />
       </svg>
     </div>
   );
@@ -76,15 +76,15 @@ const CustomPinBrand = () => (
 export default function PinPage() {
   const router = useRouter();
   const PIN_LENGTH = 4;
-  
+
   const [pin1, setPin1] = useState("");
   const [pin2, setPin2] = useState("");
   const [activeField, setActiveField] = useState<1 | 2>(1);
   const [error, setError] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   const user = useAuthStore((state) => state.user);
-  
+
   const input1Ref = useRef<HTMLInputElement>(null);
   const input2Ref = useRef<HTMLInputElement>(null);
 
@@ -157,15 +157,15 @@ export default function PinPage() {
   const renderDots = (value: string, field: 1 | 2) => {
     const isError = field === 2 && error;
     const isSuccess = field === 2 && value.length === PIN_LENGTH && value === pin1;
-    
+
     return (
       <div className="flex gap-2.5 mb-2 relative" onClick={() => field === 1 ? input1Ref.current?.focus() : input2Ref.current?.focus()}>
         {Array.from({ length: PIN_LENGTH }).map((_, i) => {
           const isFilled = i < value.length;
           const isActive = i === value.length && activeField === field;
-          
+
           let classes = "w-[44px] h-[52px] bg-white border-[1.5px] border-[#A8CDBF] rounded-[10px] flex items-center justify-center transition-all duration-150 cursor-text relative ";
-          
+
           if (isError) {
             classes = "w-[44px] h-[52px] bg-[#FFF4EC] border-[1.5px] border-[#D85A30] rounded-[10px] flex items-center justify-center transition-all duration-150 relative animate-[shake_0.35s_ease-in-out] ";
           } else if (isSuccess) {
@@ -175,7 +175,7 @@ export default function PinPage() {
           } else if (isActive) {
             classes += "border-[#0F6E56] ring-[3px] ring-[#0F6E56]/10 ";
           }
-          
+
           return (
             <div key={i} className={classes}>
               {isFilled && (
@@ -252,9 +252,9 @@ export default function PinPage() {
         <div className={`text-[11px] min-h-[16px] ${error ? "text-[#D85A30]" : pin2.length === PIN_LENGTH && pin1 === pin2 ? "text-[#0F6E56]" : "text-[#A8CDBF]"}`}>
           {error ? "Les PIN ne correspondent pas" : pin2.length === PIN_LENGTH && pin1 === pin2 ? "PIN confirmé ✓" : "Resaisissez le même PIN"}
         </div>
-        <McButton 
-          className="mt-8" 
-          onClick={handleSubmit} 
+        <McButton
+          className="mt-8"
+          onClick={handleSubmit}
           disabled={pin1.length !== PIN_LENGTH || pin2.length !== PIN_LENGTH || error || isProcessing}
         >
           {isProcessing ? <Loader2 size={18} className="animate-spin" /> : "Confirmer le PIN"}
