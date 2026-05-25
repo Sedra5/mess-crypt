@@ -4,10 +4,10 @@
 postgresql:
   replicaCount: 3
   database: messenger
-  password: Sedra12345!
-  repmgrPassword: repmgr_password
-  postgresPassword: admin_password
+  # password: géré par le secret Kubernetes "postgresql-ha-postgresql"
+  # repmgrPassword: géré par le secret Kubernetes "postgresql-ha-postgresql"
+  # postgresPassword: géré par le secret Kubernetes "postgresql-ha-postgresql"
 
 pgpool:
   replicaCount: 2
-  adminPassword: admin_password
+  # adminPassword: géré par le secret Kubernetes "postgresql-ha-pgpool"
