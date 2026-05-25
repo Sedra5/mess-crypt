@@ -4,8 +4,8 @@ image:
   tag: "789ff1d" # Remplacé automatiquement par CI/CD
 resources:
   requests:
-    cpu: "1000m"
-    memory: "1Gi"
+    cpu: "50m"
+    memory: "128Mi"
   limits:
     cpu: "4000m"
     memory: "4Gi"
