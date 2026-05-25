@@ -8,4 +8,5 @@ metadata:
 data:
   ASPNETCORE_ENVIRONMENT: {{ .Values.env.ASPNETCORE_ENVIRONMENT | quote }}
   ASPNETCORE_URLS: "http://+:8080"
-  # Les autres variables non-secrètes peuvent être ajoutées ici
+  Cors__Origins__0: "https://messcrypt.com"
+  Cors__Origins__1: "https://api.messcrypt.com"
