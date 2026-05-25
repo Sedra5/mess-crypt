@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { deriveKeyFromPhrase, encryptPrivateKey } from "@/lib/crypto/recovery";
+import { getPrivateKey } from "@/lib/crypto/store";
 import { userService } from "@/services/userService";
 import { Loader2, ShieldCheck, Lock, KeyRound } from "lucide-react";
 import { AuthLayout } from "@/components/auth/AuthLayout";
@@ -123,8 +124,8 @@ export default function PinPage() {
     if (pin1 === pin2 && pin1.length === PIN_LENGTH && user) {
       setIsProcessing(true);
       try {
-        // 1. Get private key from in-memory store
-        const privateKey = useAuthStore.getState().privateKey;
+        // 1. Get private key from IndexedDB store
+        const privateKey = await getPrivateKey(user.id);
         if (!privateKey) throw new Error("Clé privée introuvable");
 
         // 2. Derive phraseKey from PIN using user.id as salt
@@ -218,7 +219,6 @@ export default function PinPage() {
         value={pin1}
         onChange={handlePin1Change}
         className="opacity-0 absolute w-0 h-0 -z-10"
-        aria-hidden="true"
       />
       <input
         ref={input2Ref}
@@ -228,7 +228,6 @@ export default function PinPage() {
         value={pin2}
         onChange={handlePin2Change}
         className="opacity-0 absolute w-0 h-0 -z-10"
-        aria-hidden="true"
       />
 
       {/* PIN entry 1 */}
