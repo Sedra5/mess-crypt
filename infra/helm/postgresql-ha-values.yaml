@@ -1,13 +1,15 @@
 # Values utilisées pour le déploiement de Bitnami PostgreSQL en HA (PgPool + Repmgr)
 # Commande: helm upgrade --install postgresql-ha bitnami/postgresql-ha -f infra/helm/postgresql-ha-values.yaml -n production
 
+global:
+  postgresql:
+    auth:
+      existingSecret: app-secrets
+
 postgresql:
   replicaCount: 3
   database: messenger
-  # password: géré par le secret Kubernetes "postgresql-ha-postgresql"
-  # repmgrPassword: géré par le secret Kubernetes "postgresql-ha-postgresql"
-  # postgresPassword: géré par le secret Kubernetes "postgresql-ha-postgresql"
 
 pgpool:
   replicaCount: 2
-  # adminPassword: géré par le secret Kubernetes "postgresql-ha-pgpool"
+  adminExistingSecret: app-secrets
