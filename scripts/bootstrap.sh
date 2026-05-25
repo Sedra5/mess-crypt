@@ -77,18 +77,7 @@ helm upgrade --install cert-manager jetstack/cert-manager \
 echo "  Configuration du ClusterIssuer Let's Encrypt..."
 kubectl apply -f k8s/cert-manager/cluster-issuer.yaml
 
-# --- 8. Installer Prometheus + Grafana (monitoring) ---
-echo ""
-echo "[8/13] Installation kube-prometheus-stack..."
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-
-helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
-  --namespace monitoring \
-  --create-namespace \
-  --set prometheus.prometheusSpec.retention=30d \
-  --set prometheus.prometheusSpec.retentionSize=50GB \
-  --wait --timeout 5m
+# --- 8. (Supprimé pour libérer de l'espace sur Azure) ---
 
 # --- 9. Installer ArgoCD (avec force-conflicts pour éviter les erreurs CRD) ---
 echo ""
@@ -129,17 +118,13 @@ helm upgrade --install redis bitnami/redis \
   -f infra/helm/redis-ha-values.yaml \
   --wait --timeout 5m
 
-# --- 13. Alertes Prometheus ---
-echo ""
-echo "[13/13] Configuration des alertes..."
-kubectl apply -f k8s/monitoring/alerts.yaml
+# --- 13. (Alertes Prometheus supprimées) ---
 
 # --- Enregistrer les applications ArgoCD ---
 echo ""
 echo "Enregistrement des applications ArgoCD..."
 kubectl apply -f argocd/applications/messenger-api.yaml
 kubectl apply -f argocd/applications/messenger-web.yaml
-kubectl apply -f argocd/applications/monitoring.yaml
 
 # --- Résumé ---
 echo ""
