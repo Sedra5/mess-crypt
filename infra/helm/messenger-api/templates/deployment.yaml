@@ -84,7 +84,7 @@ spec:
             - name: Jwt__Secret
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: jwt-secrets
                   key: jwt-secret
 
           resources:
