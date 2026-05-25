@@ -151,6 +151,7 @@ class SignalRService {
       // Only add if not already in list
       if (!conversations.find(c => c.id === conversation.id)) {
         setConversations([conversation, ...conversations]);
+        this.joinConversation(conversation.id);
       }
     });
 
@@ -209,6 +210,21 @@ class SignalRService {
   async stopTyping(conversationId: string) {
     if (this.connection?.state === signalR.HubConnectionState.Connected) {
       await this.connection.invoke("StopTyping", conversationId);
+    }
+  }
+
+  async syncOnlineUsers() {
+    if (this.connection?.state === signalR.HubConnectionState.Connected) {
+      try {
+        const onlineUsers = await this.connection.invoke<{ id: string }[]>("GetOnlineUsers");
+        if (onlineUsers) {
+          const statusMap: Record<string, { isOnline: boolean }> = {};
+          onlineUsers.forEach(u => statusMap[u.id] = { isOnline: true });
+          useChatStore.getState().setUserStatus(statusMap);
+        }
+      } catch (err) {
+        console.error("Failed to sync online users", err);
+      }
     }
   }
 }

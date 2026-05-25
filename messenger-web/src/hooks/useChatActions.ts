@@ -28,6 +28,7 @@ export function useChatActions() {
     setMessages,
     addMessage,
     cleanupOldMessages,
+    clearUnreadCount,
   } = useChatStore();
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -53,6 +54,7 @@ export function useChatActions() {
   const openConversation = useCallback(
     async (conversationId: string) => {
       setActiveConversation(conversationId);
+      clearUnreadCount(conversationId);
       if (!messages[conversationId] && user) {
         try {
           const res = await chatService.getMessages(conversationId);
@@ -101,7 +103,7 @@ export function useChatActions() {
         }
       }
     },
-    [messages, user, privateKey, setActiveConversation, setMessages]
+    [messages, user, privateKey, setActiveConversation, setMessages, clearUnreadCount]
   );
 
   // Start or open a conversation with a target user
@@ -134,6 +136,7 @@ export function useChatActions() {
 
           signalRService.joinConversation(convo.id);
           openConversation(convo.id);
+          signalRService.syncOnlineUsers();
         }
       } catch (err) {
         console.error(err);

@@ -14,6 +14,7 @@ interface ChatState {
   markAsRead: (conversationId: string, messageId: string) => void;
   cleanupOldMessages: () => void;
   clearChatStore: () => void;
+  clearUnreadCount: (conversationId: string) => void;
 
   setUserStatus: (statuses: Record<string, { isOnline: boolean; lastSeenAt?: string }>) => void;
   setUserOnline: (userId: string) => void;
@@ -116,6 +117,12 @@ export const useChatStore = create<ChatState>((set) => ({
       )
     };
   }),
+
+  clearUnreadCount: (conversationId) => set((state) => ({
+    conversations: state.conversations.map(c => 
+      c.id === conversationId ? { ...c, unreadCount: 0 } : c
+    )
+  })),
 
   // US-16: Cron côté front — nettoyage UI à 24h
   cleanupOldMessages: () => set((state) => {

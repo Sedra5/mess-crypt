@@ -206,11 +206,6 @@ public class ChatHub : Hub
             ReadAt = null
         };
 
-        // Broadcast to other group members (sender already has the message locally)
-        await Clients.OthersInGroup(conversationId.ToString())
-            .SendAsync("ReceiveMessage", messageDto);
-
-        // If this is the first message, notify others to add the conversation to their sidebar
         var messageCount = await _dbContext.Messages
             .CountAsync(m => m.ConversationId == conversationId);
 
@@ -222,7 +217,7 @@ public class ChatHub : Hub
                 .Include(cp => cp.User)
                 .ToListAsync();
 
-            // Send personalized NewConversation to each other participant
+            // Send personalized NewConversation to each other participant directly
             foreach (var participant in participants.Where(p => p.UserId != userId))
             {
                 var senderParticipant = participants.First(p => p.UserId == userId);
@@ -242,9 +237,18 @@ public class ChatHub : Hub
                     UnreadCount = 1
                 };
 
-                await Clients.OthersInGroup(conversationId.ToString())
+                await Clients.User(participant.UserId.ToString())
                     .SendAsync("NewConversation", conversationInfo);
+                    
+                await Clients.User(participant.UserId.ToString())
+                    .SendAsync("ReceiveMessage", messageDto);
             }
+        }
+        else
+        {
+            // Broadcast to other group members
+            await Clients.OthersInGroup(conversationId.ToString())
+                .SendAsync("ReceiveMessage", messageDto);
         }
 
         _logger.LogInformation(

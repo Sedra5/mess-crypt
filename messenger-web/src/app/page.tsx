@@ -11,6 +11,7 @@ import { authService } from "@/services/authService";
 import { signalRService } from "@/lib/signalr";
 import { Loader2 } from "lucide-react";
 import { User } from "@/lib/types";
+import { getPrivateKey } from "@/lib/crypto/store";
 import { Suspense } from "react";
 
 // Extracted components
@@ -30,7 +31,7 @@ function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isReady, user } = useAuthGuard();
-  const { isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated, logout, privateKey, setPrivateKey } = useAuthStore();
 
   const {
     conversations,
@@ -61,6 +62,22 @@ function DashboardContent() {
   );
 
   // Auth guard handled by useAuthGuard hook
+
+  // Restore privateKey from IDB if missing (on page reload)
+  useEffect(() => {
+    if (isAuthenticated && user && !privateKey) {
+      getPrivateKey(user.id).then((key) => {
+        if (key) {
+          setPrivateKey(key);
+        } else {
+          router.replace(user.pinEncryptedPrivateKey ? "/login/pin" : "/login/recovery");
+        }
+      }).catch((err) => {
+        console.error("Failed to load private key from IDB", err);
+        router.replace(user.pinEncryptedPrivateKey ? "/login/pin" : "/login/recovery");
+      });
+    }
+  }, [isAuthenticated, user, privateKey, setPrivateKey, router]);
 
   // Connect & fetch
   useEffect(() => {
