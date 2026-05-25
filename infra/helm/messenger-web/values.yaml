@@ -48,4 +48,4 @@ nodeSelector: {}
 # NGINX répond sur /health (défini dans nginx.conf)
 healthCheck:
   path: /health
-  port: 80
+  port: 8080
