@@ -170,6 +170,18 @@ public static class HostingExtensions
         // Endpoint global /health (backward compat avec Dockerfile HEALTHCHECK)
         app.MapHealthChecks("/health");
 
+        // Endpoint pour test de charge CPU (Démonstration HPA)
+        app.MapGet("/health/stress", () =>
+        {
+            // Calcul intensif pour forcer l'usage du CPU
+            double result = 0;
+            for (int i = 0; i < 500000; i++)
+            {
+                result += Math.Sqrt(i) * Math.Tan(i);
+            }
+            return Results.Ok(new { status = "Stressed", computed = result });
+        });
+
         return app;
     }
 }
