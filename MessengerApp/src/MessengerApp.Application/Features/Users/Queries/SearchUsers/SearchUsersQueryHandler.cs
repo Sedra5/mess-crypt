@@ -32,6 +32,7 @@ public class SearchUsersQueryHandler : IRequestHandler<SearchUsersQuery, Result<
                 u.Id != _currentUser.UserId &&
                 (u.Pseudo.ToLower().Contains(searchTerm) ||
                  u.Email!.ToLower().Contains(searchTerm)))
+            .OrderBy(u => u.Pseudo)
             .Take(20)
             .Select(u => new UserDto
             {

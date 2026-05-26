@@ -9,7 +9,7 @@ image:
 service:
   type: ClusterIP
   port: 80
-  targetPort: 8080     # .NET 9 écoute sur 8080 (ASPNETCORE_URLS=http://+:8080)
+  targetPort: 8080 # .NET 9 écoute sur 8080 (ASPNETCORE_URLS=http://+:8080)
 
 # --- Ingress ---
 ingress:
