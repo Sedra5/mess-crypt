@@ -1,7 +1,7 @@
 # Override pour production
 replicaCount: 2
 image:
-  tag: "b91c95a" # Remplacé automatiquement par CI/CD
+  tag: "c346ceb" # Remplacé automatiquement par CI/CD
 resources:
   requests:
     cpu: "50m"
