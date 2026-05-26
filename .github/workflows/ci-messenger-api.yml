@@ -78,6 +78,7 @@ jobs:
           context: MessengerApp
           file: MessengerApp/Dockerfile
           push: true
+          provenance: false
           tags: |
             ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.sha }}
             ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
