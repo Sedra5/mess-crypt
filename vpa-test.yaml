@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vpa-stress-test
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vpa-stress-test
+  template:
+    metadata:
+      labels:
+        app: vpa-stress-test
+    spec:
+      containers:
+      - name: stress
+        image: polinux/stress
+        command: ["stress"]
+        args: ["--cpu", "1", "--timeout", "3600s"] # Génère 100% de charge sur 1 core
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: vpa-stress-test-vpa
+  namespace: production
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: vpa-stress-test
+  updatePolicy:
+    updateMode: "Auto"

@@ -1,0 +1,40 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: messenger-cnpg-db
+  namespace: production
+spec:
+  instances: 3
+  
+  # Configuration VPA pour ajuster verticalement la base de données
+  enableSuperuserAccess: true
+
+  # Stockage SSD Premium
+  storage:
+    size: 20Gi
+    storageClass: managed-premium
+
+  # L'utilisateur applicatif et la base par défaut
+  bootstrap:
+    initdb:
+      database: messenger
+      owner: messenger_user
+
+  # Haute disponibilité et tolérance aux pannes sur différents nœuds
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+
+  # Auto-scaling vertical via le VPA (CloudNativePG intègre nativement le support)
+  # Mais nous utilisons les limites par défaut ici car le VPA est géré à part si besoin
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+  # Monitoring et métriques pour Prometheus
+  monitoring:
+    enablePodMonitor: true

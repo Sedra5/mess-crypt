@@ -61,6 +61,61 @@ spec:
       # Arrêt gracieux .NET (drain des connexions SignalR)
       terminationGracePeriodSeconds: 90
 
+      initContainers:
+        - name: run-migrations
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              export ConnectionStrings__DefaultConnection="Host=$PGHOST;Port=$PGPORT;Database=$PGDATABASE;Username=$PGUSER;Password=$PGPASSWORD"
+              exec dotnet MessengerApp.API.dll
+          envFrom:
+            - configMapRef:
+                name: messenger-api-config
+          env:
+            - name: RUN_MIGRATIONS
+              value: "true"
+            - name: PGHOST
+              valueFrom:
+                secretKeyRef:
+                  name: messenger-cnpg-db-app
+                  key: host
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: messenger-cnpg-db-app
+                  key: port
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: messenger-cnpg-db-app
+                  key: dbname
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: messenger-cnpg-db-app
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: messenger-cnpg-db-app
+                  key: password
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: redis-connection-string
+            - name: Jwt__Secret
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secrets
+                  key: jwt-secret
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+
       containers:
         - name: messenger-api
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -72,12 +127,37 @@ spec:
           envFrom:
             - configMapRef:
                 name: messenger-api-config
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              export ConnectionStrings__DefaultConnection="Host=$PGHOST;Port=$PGPORT;Database=$PGDATABASE;Username=$PGUSER;Password=$PGPASSWORD"
+              exec dotnet MessengerApp.API.dll
           env:
-            - name: ConnectionStrings__DefaultConnection
+            - name: PGHOST
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
-                  key: postgresql-connection-string
+                  name: messenger-cnpg-db-app
+                  key: host
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: messenger-cnpg-db-app
+                  key: port
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: messenger-cnpg-db-app
+                  key: dbname
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: messenger-cnpg-db-app
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: messenger-cnpg-db-app
+                  key: password
             - name: ConnectionStrings__Redis
               valueFrom:
                 secretKeyRef:

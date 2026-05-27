@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cnpg-egress
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+  policyTypes:
+    - Egress
+    - Ingress
+  ingress:
+    # Autoriser l'accès depuis l'API Messenger (déjà fait, mais on s'assure)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: messenger-api
+      ports:
+        - port: 5432
+    # Autoriser la communication intra-cluster CNPG (streaming replication, leader election, etc.)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - port: 5432
+        - port: 8000
+  egress:
+    # Autoriser l'accès à l'API Kubernetes
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+    # Autoriser la communication inter-nœuds CNPG
+    - to:
+        - podSelector:
+            matchLabels:
+               app.kubernetes.io/name: postgresql
+      ports:
+        - port: 5432
+        - port: 8000

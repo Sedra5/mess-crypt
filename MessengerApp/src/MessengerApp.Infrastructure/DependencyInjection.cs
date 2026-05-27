@@ -19,8 +19,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // PostgreSQL + EF Core
-        services.AddDbContext<ApplicationDbContext>(options =>
+        // PostgreSQL + EF Core (with Connection Pooling for Horizontal Scalability)
+        services.AddDbContextPool<ApplicationDbContext>(options =>
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
                 npgsqlOptions =>
